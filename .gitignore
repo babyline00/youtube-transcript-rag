@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+bun.lock
+
+# next.js
+.next/
+out/
+build/
+.vercel/
+
+# env / local config
+.env
+.env.local
+.env.*.local
+
+# prisma / sqlite db (kept inside db/ — see .env for the absolute path)
+db/
+*.db
+*.db-journal
+*.sqlite
+
+# logs
+dev.log
+server.log
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+
+# test artifacts
+coverage/
+tmp/
+
+# z.ai scaffold internal scripts
+.zscripts/

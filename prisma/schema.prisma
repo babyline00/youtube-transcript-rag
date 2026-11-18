@@ -1,0 +1,78 @@
+// YouTube Transcript RAG — Prisma schema
+// SQLite local-first. Embeddings serialized as JSON-encoded Float32Array in
+// `VideoChunk.embedding` so cosine similarity is computed in app code without
+// needing sqlite-vec / pgvector extensions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Video {
+  id           String   @id @default(cuid())
+  youtubeId    String   @unique
+  title        String
+  channel      String?
+  durationSec  Int?
+  thumbnailUrl String?
+  importedAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  chapters Chapter[]
+  chunks   VideoChunk[]
+}
+
+model Chapter {
+  id        String  @id @default(cuid())
+  videoId   String
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  ordinal   Int
+  title     String
+  startSec  Int
+  endSec    Int
+  chunks    VideoChunk[]
+
+  @@index([videoId])
+}
+
+model VideoChunk {
+  id        String   @id @default(cuid())
+  videoId   String
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  ordinal   Int
+  startSec  Int
+  endSec    Int
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  content   String
+  tokens    String
+  embedding String
+  createdAt DateTime @default(now())
+
+  @@index([videoId])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  citations String?
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}
